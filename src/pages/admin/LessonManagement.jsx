@@ -312,84 +312,61 @@ const LessonManagement = () => {
     ];
 
     return (
-        <Card 
-            className="lesson-management-card"
-            style={{ 
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
-            }}
-        >
-            <div style={{ padding: '0 0 24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <Title level={4} style={{ margin: 0 }}>
-                        Danh sách bài học
-                    </Title>
-                    <Button 
-                        type="primary" 
-                        icon={<PlusOutlined />}
-                        onClick={() => showModal()}
-                    >
-                        Thêm bài học
-                    </Button>
-                </div>
-                
-                <Search
-                    placeholder="Tìm kiếm theo tiêu đề hoặc nội dung"
-                    allowClear
-                    enterButton={<SearchOutlined />}
-                    size="large"
-                    onChange={(e) => handleSearch(e.target.value)}
-                    value={searchText}
-                    style={{ marginBottom: 16 }}
-                />
-                
-                <Table
-                    dataSource={filteredLessons}
-                    columns={columns}
-                    rowKey="id"
-                    loading={loading}
-                    pagination={{ 
-                        pageSize: 5,
-                        showTotal: (total) => `Tổng cộng ${total} bài học`,
-                        showSizeChanger: true,
-                        pageSizeOptions: ['5', '10', '20']
-                    }}
-                    bordered
-                    style={{ 
-                        backgroundColor: 'white',
-                        borderRadius: '4px',
-                    }}
-                    rowClassName={(record, index) => 
-                        index % 2 === 0 ? 'table-row-light' : 'table-row-dark'
-                    }
-                />
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <Title level={2} className="!mb-0">Quản Lý Bài Học</Title>
+                <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />} 
+                    onClick={() => showModal()}
+                    className="w-full sm:w-auto"
+                >
+                    Thêm Bài Học Mới
+                </Button>
             </div>
 
-            {/* Modal tạo/cập nhật bài học */}
+            <Card className="shadow-sm">
+                <div className="mb-4">
+                    <Search
+                        placeholder="Tìm kiếm bài học..."
+                        allowClear
+                        enterButton={<SearchOutlined />}
+                        size="large"
+                        onSearch={handleSearch}
+                        className="w-full sm:w-96"
+                    />
+                </div>
+
+                <Table
+                    columns={columns}
+                    dataSource={filteredLessons}
+                    rowKey="id"
+                    loading={loading}
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total) => `Tổng số ${total} bài học`,
+                        className: "mt-4"
+                    }}
+                    scroll={{ x: true }}
+                    className="overflow-x-auto"
+                />
+            </Card>
+
             <Modal
-                title={editingLesson ? "Cập nhật bài học" : "Thêm bài học mới"}
+                title={editingLesson ? "Chỉnh Sửa Bài Học" : "Thêm Bài Học Mới"}
                 open={isModalVisible}
                 onCancel={handleCancel}
-                footer={[
-                    <Button key="back" onClick={handleCancel} disabled={submitLoading}>
-                        Hủy
-                    </Button>,
-                    <Button 
-                        key="submit" 
-                        type="primary" 
-                        onClick={handleSubmit} 
-                        loading={submitLoading}
-                    >
-                        {editingLesson ? "Cập nhật" : "Tạo mới"}
-                    </Button>,
-                ]}
-                width={700}
+                width={800}
+                footer={null}
+                destroyOnClose
             >
                 <Form
                     form={form}
                     layout="vertical"
-                    name="lessonForm"
-                    initialValues={{ type: 'file' }}
+                    onFinish={handleSubmit}
+                    className="mt-4"
                 >
                     <Form.Item
                         name="title"
@@ -404,39 +381,43 @@ const LessonManagement = () => {
                         label="Nội dung"
                         rules={[{ required: true, message: 'Vui lòng nhập nội dung!' }]}
                     >
-                        <TextArea 
-                            placeholder="Nhập nội dung bài học" 
-                            autoSize={{ minRows: 3, maxRows: 6 }}
-                        />
+                        <TextArea rows={4} placeholder="Nhập nội dung bài học" />
                     </Form.Item>
 
                     <Form.Item
                         name="file"
-                        label="Tải lên tệp (PDF hoặc Video)"
-                        rules={[{ required: true, message: 'Vui lòng tải lên tệp PDF hoặc video!' }]}
+                        label="Tệp đính kèm"
+                        rules={[{ required: !editingLesson, message: 'Vui lòng tải lên tệp!' }]}
                     >
-                        <Upload
+                        <Dragger
+                            accept=".pdf,video/*"
                             maxCount={1}
-                            beforeUpload={(file) => {
-                                const isPDF = file.type === 'application/pdf';
-                                const isVideo = file.type.startsWith('video/');
-                                if (!isPDF && !isVideo) {
-                                    message.error('Chỉ chấp nhận file PDF hoặc video!');
-                                }
-                                return false;
-                            }}
-                            accept=".pdf,.mp4,.webm,.avi"
+                            beforeUpload={() => false}
+                            className="!border-dashed"
                         >
-                            <Button icon={<UploadOutlined />}>Chọn tệp</Button>
-                            <Text type="secondary" style={{ marginLeft: 10 }}>
-                                Hỗ trợ tệp PDF hoặc video (MP4, Webm, AVI) dưới 100MB
-                            </Text>
-                        </Upload>
+                            <p className="ant-upload-drag-icon">
+                                <UploadOutlined />
+                            </p>
+                            <p className="ant-upload-text">Nhấp hoặc kéo tệp vào đây để tải lên</p>
+                            <p className="ant-upload-hint">
+                                Chỉ chấp nhận file PDF hoặc video
+                            </p>
+                        </Dragger>
                     </Form.Item>
 
+                    <Form.Item className="mb-0">
+                        <div className="flex justify-end gap-2">
+                            <Button onClick={handleCancel}>
+                                Hủy
+                            </Button>
+                            <Button type="primary" htmlType="submit" loading={submitLoading}>
+                                {editingLesson ? 'Cập Nhật' : 'Thêm Mới'}
+                            </Button>
+                        </div>
+                    </Form.Item>
                 </Form>
             </Modal>
-        </Card>
+        </div>
     );
 };
 

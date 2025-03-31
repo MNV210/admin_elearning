@@ -8,7 +8,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { categoryService } from '../../services';
 import { toast } from 'react-toastify';
-import { Modal } from 'antd';
+import { Modal, Form, Input, Select, Button } from 'antd';
+import { useAuth } from '../../context/AuthContext';
 
 function CategoryManagement() {
   const [categories, setCategories] = useState([]);
@@ -19,6 +20,8 @@ function CategoryManagement() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState(null);
+  const { user } = useAuth();
+  const [form] = Form.useForm();
   
   // Form data for category modal
   const [formData, setFormData] = useState({
@@ -39,7 +42,6 @@ function CategoryManagement() {
       setError(null);
       
       const response = await categoryService.getAllCategories();
-      // const categoriesData = response.data || response.categories || [];
       setCategories(response);
     } catch (error) {
       toast.error('Không thể tải danh mục: ' + (error.response?.data?.message || error.message));
@@ -64,6 +66,10 @@ function CategoryManagement() {
 
   // Handle opening delete category modal
   const handleDeleteCategory = (category) => {
+    if (user?.role !== 'admin') {
+      toast.error('Bạn không có quyền xóa danh mục!');
+      return;
+    }
     setDeletingCategory(category);
     setIsDeleteModalOpen(true);
   };
@@ -71,7 +77,7 @@ function CategoryManagement() {
   // Handle confirming category deletion
   const confirmDeleteCategory = async () => {
     try {
-      await categoryService.deleteCategory(deletingCategory.id).then  (() => {
+      await categoryService.deleteCategory(deletingCategory.id).then(() => {
         setCategories(categories.filter(category => category.id !== deletingCategory.id));
         toast.success('Đã xóa danh mục thành công');
         setIsDeleteModalOpen(false);
@@ -92,7 +98,7 @@ function CategoryManagement() {
   // Handle opening edit category modal
   const handleEditCategory = (category) => {
     setEditingCategory(category);
-    setFormData({
+    form.setFieldsValue({
       name: category.name,
       description: category.description || '',
       status: category.status || 'active'
@@ -103,11 +109,7 @@ function CategoryManagement() {
   // Handle opening add category modal
   const handleAddCategory = () => {
     setEditingCategory(null);
-    setFormData({
-      name: '',
-      description: '',
-      status: 'active'
-    });
+    form.resetFields();
     setIsModalOpen(true);
   };
 
@@ -121,40 +123,30 @@ function CategoryManagement() {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (values) => {
     try {
       if (editingCategory) {
         // Update existing category
-        const result = await categoryService.updateCategory(editingCategory.id, formData);
+        const result = await categoryService.updateCategory(editingCategory.id, values);
         if (result) {
           toast.success('Danh mục đã được cập nhật thành công');
           // Close modal and reset form
           setIsModalOpen(false);
           setEditingCategory(null);
-          setFormData({
-            name: '',
-            description: '',
-            status: 'active'
-          });
+          form.resetFields();
           
           // Fetch updated data from API
           fetchCategories();
         }
       } else {
         // Create new category
-        const result = await categoryService.createCategory(formData);
+        const result = await categoryService.createCategory(values);
         if (result) {
           toast.success('Danh mục mới đã được tạo thành công');
           // Close modal and reset form
           setIsModalOpen(false);
           setEditingCategory(null);
-          setFormData({
-            name: '',
-            description: '',
-            status: 'active'
-          });
+          form.resetFields();
           
           // Fetch updated data from API
           fetchCategories();
@@ -187,20 +179,6 @@ function CategoryManagement() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0">Quản Lý Danh Mục</h3>
           <div className="flex space-x-2">
-            {/* <button 
-              className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-              onClick={fetchCategories}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></span>
-                  Đang làm mới...
-                </>
-              ) : (
-                'Làm Mới Danh Mục'
-              )}
-            </button> */}
             <button 
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               onClick={handleAddCategory}
@@ -248,59 +226,35 @@ function CategoryManagement() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tên danh mục
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mô tả
-                  </th>
-                  {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Trạng thái
-                  </th> */}
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Số khóa học
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Thao tác
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Danh Mục</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mô Tả</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao Tác</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCategories.map(category => (
-                  <tr key={category.id} className="hover:bg-gray-50">
+                {filteredCategories.map((category) => (
+                  <tr key={category.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{category.name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 line-clamp-2">{category.description || 'Không có mô tả'}</div>
+                      <div className="text-sm text-gray-500">{category.description}</div>
                     </td>
-                    {/* <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        category.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {category.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
-                      </span>
-                    </td> */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {category.courseCount || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleEditCategory(category)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center"
-                        >
-                          <PencilIcon className="w-4 h-4 mr-1" />
-                          Sửa
-                        </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleEditCategory(category)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        <PencilIcon className="w-5 h-5" />
+                      </button>
+                      {user?.role === 'admin' && (
                         <button
                           onClick={() => handleDeleteCategory(category)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
+                          className="text-red-600 hover:text-red-900"
                         >
-                          <TrashIcon className="w-4 h-4 mr-1" />
-                          Xóa
+                          <TrashIcon className="w-5 h-5" />
                         </button>
-                      </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -309,107 +263,70 @@ function CategoryManagement() {
           </div>
         )}
       </div>
-      
-      {/* Modal for adding/editing category */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800">
-                {editingCategory ? 'Chỉnh Sửa Danh Mục' : 'Thêm Danh Mục Mới'}
-              </h3>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <XMarkIcon className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit}>
-              <div className="p-6 space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Tên danh mục <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nhập tên danh mục"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Mô tả
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Nhập mô tả danh mục"
-                  ></textarea>
-                </div>
-                
-                {/* <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                    Trạng thái
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="active">Hoạt động</option>
-                    <option value="inactive">Không hoạt động</option>
-                  </select>
-                </div> */}
-              </div>
-              
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                >
-                  {editingCategory ? 'Cập Nhật' : 'Thêm Mới'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Delete confirmation modal */}
+      {/* Add/Edit Category Modal */}
       <Modal
-        title="Xác nhận xóa"
+        title={editingCategory ? 'Chỉnh Sửa Danh Mục' : 'Thêm Danh Mục Mới'}
+        open={isModalOpen}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setEditingCategory(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          layout="vertical"
+          form={form}
+          onFinish={handleSubmit}
+          initialValues={formData}
+        >
+          <Form.Item
+            label="Tên Danh Mục"
+            name="name"
+            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục!' }]}
+          >
+            <Input placeholder="Nhập tên danh mục" />
+          </Form.Item>
+
+          <Form.Item
+            label="Mô Tả"
+            name="description"
+          >
+            <Input.TextArea 
+              rows={4} 
+              placeholder="Nhập mô tả danh mục"
+            />
+          </Form.Item>
+
+          <Form.Item className="mb-0">
+            <div className="flex justify-end space-x-2">
+              <Button 
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingCategory(null);
+                  form.resetFields();
+                }}
+              >
+                Hủy
+              </Button>
+              <Button type="primary" htmlType="submit">
+                {editingCategory ? 'Cập Nhật' : 'Thêm Mới'}
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        title="Xác Nhận Xóa"
         open={isDeleteModalOpen}
         onOk={confirmDeleteCategory}
         onCancel={cancelDeleteCategory}
-        okText="Xóa"
-        cancelText="Hủy"
-        okButtonProps={{ 
-          style: { backgroundColor: '#ef4444', borderColor: '#ef4444' } 
-        }}
       >
         <p>Bạn có chắc chắn muốn xóa danh mục "{deletingCategory?.name}"?</p>
-        <p className="text-gray-500 text-sm mt-2">Hành động này không thể hoàn tác.</p>
       </Modal>
     </div>
   );

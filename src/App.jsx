@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";  
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,21 +16,12 @@ import CategoryManagement from "./pages/admin/CategoryManagement";
 import AnalyticsPage from "./pages/admin/AnalyticsPage";
 import NotificationsPage from "./pages/admin/NotificationsPage";
 import CourseDetail from "./pages/admin/CourseDetail";
-
-// Import User Dashboard Components
-import UserDashboard from "./pages/user/Dashboard";
-import UserDashboardOverview from "./pages/user/DashboardOverview";
-import LecturesAndMaterials from "./pages/user/LecturesAndMaterials";
-import QuizzesAndAssessments from "./pages/user/QuizzesAndAssessments";
-import QuizApp from "./pages/user/MakeQuizz";
-import Certifications from "./pages/user/Certifications";
-import DiscussionForum from "./pages/user/DiscussionForum";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import LectureDetails from "./components/lectures/LectureDetails";
-import LessonView from "./components/lectures/LessonView";
 import LessonManagement from "./pages/admin/LessonManagement";
 import QuestionManagement from "./pages/admin/QuestionManagement";
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleBasedRoute from "./components/RoleBasedRoute";
 
 const router = createBrowserRouter([
     {
@@ -46,81 +38,83 @@ const router = createBrowserRouter([
     },
     {
         path: "/admin",
-        element: <AdminDashboard />,
+        element: (
+            <ProtectedRoute>
+                <AdminDashboard />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 index: true,
-                element: <DashboardOverview />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin']}>
+                        <DashboardOverview />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path: "users",
-                element: <UserManagement />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin']}>
+                        <UserManagement />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path: "courses",
-                element: <CourseManagement />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin', 'teacher']}>
+                        <CourseManagement />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path: "categories",
-                element: <CategoryManagement />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin', 'teacher']}>
+                        <CategoryManagement />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path: "analytics",
-                element: <AnalyticsPage />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin']}>
+                        <AnalyticsPage />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path: "notifications",
-                element: <NotificationsPage />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin']}>
+                        <NotificationsPage />
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path:"lecture/:id/details",
-                element: <LessonManagement/>
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin', 'teacher']}>
+                        <LessonManagement/>
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path:"course/:id",
-                element: <CourseDetail/>
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin', 'teacher']}>
+                        <CourseDetail/>
+                    </RoleBasedRoute>
+                ),
             },
             {
                 path:"quiz/:quizId/questions",
-                element: <QuestionManagement/>
-            }
-        ],
-    },
-    {
-        path: "/user",
-        element: <UserDashboard />,
-        children: [
-            {
-                index: true,
-                element: <UserDashboardOverview />,
-            },
-            {
-                path: "lectures",
-                element: <LecturesAndMaterials />,
-            },
-            {
-                path:"lecture/:id",
-                element: <LectureDetails/>
-            },
-            {
-                path:"learn/:course_id/lesson/:lesson_id",
-                element: <LessonView/>
-            },
-            {
-                path: "quizzes",
-                element: <QuizzesAndAssessments />,
-            },
-            {
-                path: "quiz/:courseId/:quizId/take",
-                element: <QuizApp />,
-            },
-            {
-                path: "certifications",
-                element: <Certifications />,
-            },
-            {
-                path: "forum",
-                element: <DiscussionForum />,
+                element: (
+                    <RoleBasedRoute allowedRoles={['admin', 'teacher']}>
+                        <QuestionManagement/>
+                    </RoleBasedRoute>
+                ),
             }
         ],
     }
@@ -129,8 +123,10 @@ const router = createBrowserRouter([
 function App() {
     return (
         <ThemeProvider>
-            <RouterProvider router={router} />
-            <ToastContainer position="top-right" autoClose={3000} />
+            <AuthProvider>
+                <RouterProvider router={router} />
+                <ToastContainer position="top-right" autoClose={3000} />
+            </AuthProvider>
         </ThemeProvider>
     );
 }

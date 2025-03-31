@@ -1,28 +1,58 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form, Input, Button } from 'antd';
 import userService from '../services/userService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const LoginPage = () => {
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
+
+  const from = location.state?.from?.pathname || '/admin';
+
+  // Chuyển hướng nếu đã đăng nhập
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const onFinish = async(values) => {
-    const response = await userService.login(values).then((response) => {
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      navigate('/user')
-      return response.data;
+    try {
+      const response = await userService.login(values);
+      if (response.status === 'success' && response.data.token) {
+        // Lấy user từ object đầu tiên trong data
+        const user = Object.values(response.data)[0];
+        
+        // Kiểm tra role
+        if (user.role === 'student') {
+          toast.error('Học viên không được phép truy cập trang quản trị!');
+          return;
+        }
 
-    }).catch((error) => {
-      throw error;
-    });
-    console.log('Success:', response);
+        // Sử dụng hàm login từ AuthContext để cập nhật trạng thái
+        login(user, response.data.token);
+        toast.success('Đăng nhập thành công!');
+        
+        // Redirect based on role
+        if (user.role === 'teacher') {
+          navigate('/admin/categories', { replace: true });
+        } else {
+          navigate(from, { replace: true });
+        }
+      } else {
+        toast.error('Đăng nhập thất bại!');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Đăng nhập thất bại!');
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
+    toast.error('Vui lòng kiểm tra lại thông tin đăng nhập!');
   };
 
   return (

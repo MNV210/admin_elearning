@@ -258,215 +258,214 @@ const QuestionManagement = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 sm:mb-0">Quản Lý Câu Hỏi</h3>
-          <button
-            onClick={handleAddQuestion}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Thêm Câu Hỏi Mới
-          </button>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl font-semibold text-gray-800">Quản Lý Câu Hỏi</h1>
+        <button
+          onClick={handleAddQuestion}
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto justify-center"
+        >
+          <PlusIcon className="w-5 h-5 mr-2" />
+          Thêm Câu Hỏi Mới
+        </button>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Tìm kiếm câu hỏi..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+          </div>
         </div>
 
-        <div className="relative mb-4">
-          <input
-            type="text"
-            placeholder="Tìm kiếm câu hỏi..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2"
-            >
-              <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-            </button>
-          )}
-        </div>
-
-        {filteredQuestions.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? 'Không tìm thấy câu hỏi nào' : 'Chưa có câu hỏi nào'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {searchTerm 
-                ? 'Thử tìm kiếm với từ khóa khác hoặc xóa bộ lọc tìm kiếm' 
-                : 'Bắt đầu bằng cách thêm câu hỏi mới cho bài kiểm tra này'}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={handleAddQuestion}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Thêm Câu Hỏi Mới
-              </button>
-            )}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        ) : filteredQuestions.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Không tìm thấy câu hỏi nào.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Câu Hỏi</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đáp Án A</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đáp Án B</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đáp Án C</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đáp Án D</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đáp Án Đúng</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao Tác</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredQuestions.map((question) => (
-                  <tr key={question.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-normal">{question.question}</td>
-                    <td className="px-6 py-4 whitespace-normal">{question.option1}</td>
-                    <td className="px-6 py-4 whitespace-normal">{question.option2}</td>
-                    <td className="px-6 py-4 whitespace-normal">{question.option3}</td>
-                    <td className="px-6 py-4 whitespace-normal">{question.option4}</td>
-                    <td className="px-6 py-4">
-                      <span className="font-medium">{question.correct_answer}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleEditQuestion(question)}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteQuestion(question)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {filteredQuestions.map((question, index) => (
+              <div key={question.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">{question.question}</h3>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm">A</span>
+                            <span className={`${question.correct_answer === question.option1 ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
+                              {question.option1}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm">B</span>
+                            <span className={`${question.correct_answer === question.option2 ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
+                              {question.option2}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm">C</span>
+                            <span className={`${question.correct_answer === question.option3 ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
+                              {question.option3}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm">D</span>
+                            <span className={`${question.correct_answer === question.option4 ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
+                              {question.option4}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEditQuestion(question)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                    >
+                      <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuestion(question)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Edit/Add Modal */}
+      {/* Modal Form */}
       <Modal
         title={editingQuestion ? "Chỉnh Sửa Câu Hỏi" : "Thêm Câu Hỏi Mới"}
         open={isModalOpen}
-        onOk={handleSubmit}
-        onCancel={() => !isSubmitting && setIsModalOpen(false)}
-        okText={editingQuestion ? "Cập Nhật" : "Thêm"}
-        cancelText="Hủy"
+        onCancel={() => setIsModalOpen(false)}
+        footer={null}
         width={800}
-        confirmLoading={isSubmitting}
-        okButtonProps={{ 
-          loading: isSubmitting,
-          disabled: isSubmitting 
-        }}
-        cancelButtonProps={{ 
-          disabled: isSubmitting 
-        }}
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Câu Hỏi
+              Câu hỏi
             </label>
-            <textarea
+            <input
+              type="text"
               name="question"
               value={formData.question}
               onChange={handleInputChange}
-              rows={3}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nhập câu hỏi..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Đáp Án A
+                Đáp án A
               </label>
               <input
                 type="text"
                 name="option1"
                 value={formData.option1}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập đáp án A..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Đáp Án B
+                Đáp án B
               </label>
               <input
                 type="text"
                 name="option2"
                 value={formData.option2}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập đáp án B..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Đáp Án C
+                Đáp án C
               </label>
               <input
                 type="text"
                 name="option3"
                 value={formData.option3}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập đáp án C..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Đáp Án D
+                Đáp án D
               </label>
               <input
                 type="text"
                 name="option4"
                 value={formData.option4}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập đáp án D..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Đáp Án Đúng
+              Đáp án đúng
             </label>
-            <div className="space-y-2">
-              <input
-                type="text"
-                name="correct_answer"
-                value={formData.correct_answer}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nhập A, B, C hoặc D"
-              />
-              {formData.correct_answer_text && (
-                <div className="text-sm text-gray-600">
-                  Đáp án được chọn: {formData.correct_answer_text}
-                </div>
-              )}
-            </div>
+            <select
+              name="correct_answer"
+              value={formData.correct_answer}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Chọn đáp án đúng</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {isSubmitting ? 'Đang xử lý...' : (editingQuestion ? 'Cập Nhật' : 'Thêm Mới')}
+            </button>
           </div>
         </form>
       </Modal>
@@ -476,19 +475,9 @@ const QuestionManagement = () => {
         title="Xác Nhận Xóa"
         open={isDeleteModalOpen}
         onOk={confirmDeleteQuestion}
-        onCancel={() => !isSubmitting && setIsDeleteModalOpen(false)}
-        okText="Xóa"
-        cancelText="Hủy"
-        okButtonProps={{ 
-          danger: true,
-          loading: isSubmitting,
-          disabled: isSubmitting 
-        }}
-        cancelButtonProps={{ 
-          disabled: isSubmitting 
-        }}
+        onCancel={() => setIsDeleteModalOpen(false)}
       >
-        <p>Bạn có chắc chắn muốn xóa câu hỏi này không?</p>
+        <p>Bạn có chắc chắn muốn xóa câu hỏi này?</p>
       </Modal>
     </div>
   );
