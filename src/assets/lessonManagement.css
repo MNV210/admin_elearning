@@ -1,0 +1,19 @@
+
+
+.lesson-management-card .ant-table-thead > tr > th {
+    background-color: #f0f5ff;
+    color: #1890ff;
+    font-weight: 600;
+}
+
+.lesson-management-card .table-row-light {
+    background-color: #ffffff;
+}
+
+.lesson-management-card .table-row-dark {
+    background-color: #f8f9fa;
+}
+/* 
+.lesson-management-card .ant-table-row:hover {
+    background-color: #e6f7ff !important;
+} */
