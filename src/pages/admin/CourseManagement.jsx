@@ -23,6 +23,7 @@ import { toast } from 'react-toastify';
 import { userService } from '../../services';
 import uploadToS3 from '../../services/uploadToS3';
 import { useNavigate } from 'react-router-dom';
+import AIService from '../../services/AIService';
 
 const { Option } = Select;
 const { Dragger } = Upload;
@@ -333,7 +334,12 @@ function CourseManagement() {
       } else {
         // Create new course
         console.log(formData)
-        response = await createCourse(formData);
+        response = await createCourse(formData).then(
+          await AIService.uploadFileToAI({
+                file_url: response.data.url,
+                file_type: 'file'
+              })
+        );
       }
       
       if (response) {
