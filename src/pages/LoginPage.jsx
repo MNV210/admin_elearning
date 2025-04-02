@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import userService from '../services/userService';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,6 +9,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || '/admin';
 
@@ -20,6 +21,7 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate]);
 
   const onFinish = async(values) => {
+    setLoading(true);
     try {
       const response = await userService.login(values);
       if (response.status === 'success' && response.data.token) {
@@ -47,6 +49,8 @@ const LoginPage = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Đăng nhập thất bại!');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,7 +84,7 @@ const LoginPage = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="w-full">
+            <Button type="primary" htmlType="submit" className="w-full" loading={loading}>
               Login
             </Button>
           </Form.Item>
