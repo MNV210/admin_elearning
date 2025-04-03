@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons';
 
 import { courseService } from '../../services';
+import AIService from '../../services/AIService';
 // import '../../assets/LessonManagement.css'
 import lessonService from '../../services/lessonService';
 import uploadToS3 from '../../services/uploadToS3';
@@ -139,6 +140,10 @@ const LessonManagement = () => {
                     
                     if (file) {
                         const file_url = await uploadToS3.uploadVideo({file: file});
+                         await AIService.uploadFileToAI({
+                                        file_url: file_url.data.url,
+                                        file_type: 'file'
+                                    })
                         updateData.file_url = file_url.data.url;
                     }
                     
