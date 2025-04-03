@@ -46,17 +46,31 @@ const LessonManagement = () => {
         }, 1000);
     }
 
-    const createLesson = async(data) => {
+    const createLesson = async (data) => {
         try {
-            await lessonService.createLesson(data);
+            const response = await lessonService.createLesson(data);
             await getLessonByCourseId();
             message.success('Tạo mới bài học thành công!');
+    
+            if (response?.data?.file_url && response.data.file_type === "file") {
+                console.log("upload file to knowlegde base")
+                console.log(response.data)
+                setTimeout(() => {
+                    AIService.uploadFileToAI({
+                        file_url: response.data.file_url,
+                        file_type: 'file'
+                    }).then(() => console.log("success"))
+                    .catch(error => console.error("Upload failed:", error));
+                }, 0);
+            }
+    
             return true;
         } catch (error) {
             message.error('Tạo mới bài học thất bại: ' + (error.message || 'Đã xảy ra lỗi'));
             return false;
         }
-    }
+    };
+    
 
     // lấy danh sách khóa học theo course_id
     useEffect(() => {
@@ -146,6 +160,15 @@ const LessonManagement = () => {
                     if (response && response.status === 'success') {
                         await getLessonByCourseId();
                         message.success('Cập nhật bài học thành công!');
+                        if (response?.data?.file_url && response.data.file_type === "file") {
+                            setTimeout(() => {
+                                AIService.uploadFileToAI({
+                                    file_url: response.data.file_url,
+                                    file_type: 'file'
+                                }).then(() => console.log("success"))
+                                .catch(error => console.error("Upload failed:", error));
+                            }, 0);
+                        }
                         setIsModalVisible(false);
                         form.resetFields();
                     } else {
