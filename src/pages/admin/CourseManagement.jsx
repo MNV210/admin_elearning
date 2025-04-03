@@ -92,6 +92,7 @@ function CourseManagement() {
       setError(null);
       const response = await courseService.getCourseUserCreate();
       setCourses(response.data);
+      console.log(response.data)
       return response.data;
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message;
