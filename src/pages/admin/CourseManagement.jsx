@@ -276,14 +276,14 @@ function CourseManagement() {
     beforeUpload: (file) => {
       // Validate file type and size
       const isPdf = file.type === 'application/pdf';
-      const isLt10M = file.size / 1024 / 1024 < 10;
+      const isLt10M = file.size / 1024 / 1024 < 500;
 
       if (!isPdf) {
         message.error('Chỉ chấp nhận tệp PDF!');
         return Upload.LIST_IGNORE;
       }
       if (!isLt10M) {
-        message.error('Kích thước PDF phải nhỏ hơn 10MB!');
+        message.error('Kích thước PDF phải nhỏ hơn 500MB!');
         return Upload.LIST_IGNORE;
       }
 
@@ -745,7 +745,7 @@ function CourseManagement() {
                     </p>
                     <p className="ant-upload-text">Nhấp hoặc kéo tệp PDF vào khu vực này để tải lên</p>
                     <p className="ant-upload-hint">
-                      Chỉ hỗ trợ tệp PDF dưới 10MB
+                      Chỉ hỗ trợ tệp PDF dưới 500MB
                     </p>
                   </Dragger>
                 )}
