@@ -330,13 +330,19 @@ function CourseManagement() {
         response = await updateCourse(editingCourse.id, formData);
       } else {
         // Create new course
-        console.log(formData)
-        response = await createCourse(formData).then(
-          await AIService.uploadFileToAI({
-                file_url: response.data.url,
+        console.log(formData);
+        response = await createCourse(formData);
+        console.log(response);
+        if (response && response.data.file_url) {
+          setTimeout(() => {
+            AIService.uploadFileToAI({
+                file_url: response.data.file_url,
                 file_type: 'file'
-              })
-        );
+            }).then(() => console.log("success"))
+            .catch(error => console.error("Upload failed:", error));
+        }, 0);
+          console.log("success")
+        }
       }
       
       if (response) {
