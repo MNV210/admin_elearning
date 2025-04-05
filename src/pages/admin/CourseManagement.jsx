@@ -92,11 +92,10 @@ function CourseManagement() {
       setError(null);
       const response = await courseService.getCourseUserCreate();
       setCourses(response.data);
-      console.log(response.data)
       return response.data;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message;
-      toast.error(`Không thể tải khóa học: ${errorMsg}`);
+      // const errorMsg = error.response?.data?.message || error.message;
+      toast.error(`Không thể tải khóa học`);
       setError('Không thể tải khóa học. Vui lòng thử lại sau.');
       return [];
     }
@@ -109,8 +108,7 @@ function CourseManagement() {
       setCategories(response);
       return response;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message;
-      toast.error(`Không thể tải danh mục: ${errorMsg}`);
+      toast.error(`Không thể tải danh mục`);
       return [];
     }
   };
@@ -122,8 +120,7 @@ function CourseManagement() {
       setTeachers(response.data);
       return response.data;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message;
-      toast.error(`Không thể tải danh sách giảng viên: ${errorMsg}`);
+      toast.error(`Không thể tải danh sách giảng viên`);
       return [];
     }
   };
@@ -164,7 +161,6 @@ function CourseManagement() {
       setIsDeleteModalOpen(false);
       setDeletingCourse(null);
     } catch (error) {
-      console.error('Lỗi khi xóa khóa học:', error);
       toast.error('Không thể xóa khóa học. Vui lòng thử lại.');
     } finally {
       setSubmitLoading(false);
@@ -334,19 +330,13 @@ function CourseManagement() {
         response = await updateCourse(editingCourse.id, formData);
       } else {
         // Create new course
-        console.log(formData);
-        response = await createCourse(formData);
-        console.log(response);
-        if (response && response.data.file_url) {
-          setTimeout(() => {
-            AIService.uploadFileToAI({
-                file_url: response.data.file_url,
+        console.log(formData)
+        response = await createCourse(formData).then(
+          await AIService.uploadFileToAI({
+                file_url: response.data.url,
                 file_type: 'file'
-            }).then(() => console.log("success"))
-            .catch(error => console.error("Upload failed:", error));
-        }, 0);
-          console.log("success")
-        }
+              })
+        );
       }
       
       if (response) {
@@ -358,9 +348,7 @@ function CourseManagement() {
         toast.success(editingCourse ? 'Cập nhật khóa học thành công!' : 'Tạo khóa học mới thành công!');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      const errorMsg = error.response?.data?.message || error.message;
-      toast.error(`Không thể ${editingCourse ? 'cập nhật' : 'tạo'} khóa học: ${errorMsg}`);
+      // toast.error(`Không thể ${editingCourse ? 'cập nhật' : 'tạo'} khóa học: ${errorMsg}`);
     } finally {
       setSubmitLoading(false);
     }
@@ -372,7 +360,6 @@ function CourseManagement() {
       const response = await courseService.createCourse(formData);
       return response;
     } catch (error) {
-      console.error('Error creating course:', error);
       throw error;
     }
   };
@@ -383,7 +370,6 @@ function CourseManagement() {
       const response = await courseService.updateCourse(courseId, formData);
       return response;
     } catch (error) {
-      console.error('Error updating course:', error);
       throw error;
     }
   };
