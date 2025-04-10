@@ -52,18 +52,24 @@ const LessonManagement = () => {
             const response = await lessonService.createLesson(data);
             await getLessonByCourseId();
             message.success('Tạo mới bài học thành công!');
-    
-            if (response?.data?.file_url && response.data.file_type === "file") {
-                console.log("upload file to knowlegde base")
-                console.log(response.data)
-                setTimeout(() => {
-                    AIService.uploadFileToAI({
-                        file_url: response.data.file_url,
-                        file_type: 'file'
-                    }).then(() => console.log("success"))
-                    .catch(error => console.error("Upload failed:", error));
-                }, 0);
+            console.log("response_create_ls", response)
+            if (response?.data?.file_url && response.data.type === "file") {
+                console.log("upload file to knowledge base");
+                console.log(response.data);
+            
+                (async () => {
+                    try {
+                        await AIService.uploadFileToAI({
+                            file_url: response.data.file_url,
+                            file_type: 'file'
+                        });
+                        console.log("Upload success");
+                    } catch (error) {
+                        console.error("Upload failed:", error);
+                    }
+                })();
             }
+            
     
             return true;
         } catch (error) {
@@ -154,10 +160,10 @@ const LessonManagement = () => {
                     
                     if (file) {
                         const file_url = await uploadToS3.uploadVideo({file: file});
-                         await AIService.uploadFileToAI({
-                                        file_url: file_url.data.url,
-                                        file_type: 'file'
-                                    })
+                        //  await AIService.uploadFileToAI({
+                        //                 file_url: file_url.data.url,
+                        //                 file_type: 'file'
+                        //             })
                         updateData.file_url = file_url.data.url;
                     }
                     
@@ -165,14 +171,21 @@ const LessonManagement = () => {
                     if (response && response.status === 'success') {
                         await getLessonByCourseId();
                         message.success('Cập nhật bài học thành công!');
-                        if (response?.data?.file_url && response.data.file_type === "file") {
-                            setTimeout(() => {
-                                AIService.uploadFileToAI({
-                                    file_url: response.data.file_url,
-                                    file_type: 'file'
-                                }).then(() => console.log("success"))
-                                .catch(error => console.error("Upload failed:", error));
-                            }, 0);
+                        if (response?.data?.file_url && response.data.type === "file") {
+                            console.log("upload file to knowledge base");
+                            console.log(response.data);
+                        
+                            (async () => {
+                                try {
+                                    await AIService.uploadFileToAI({
+                                        file_url: response.data.file_url,
+                                        file_type: 'file'
+                                    });
+                                    console.log("Upload success");
+                                } catch (error) {
+                                    console.error("Upload failed:", error);
+                                }
+                            })();
                         }
                         setIsModalVisible(false);
                         form.resetFields();

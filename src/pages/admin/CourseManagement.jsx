@@ -334,14 +334,19 @@ function CourseManagement() {
         response = await createCourse(formData);
         console.log(response);
         if (response && response.data.file_url) {
-          setTimeout(() => {
-            AIService.uploadFileToAI({
+          console.log("Uploading file to AI knowledge base...");
+        
+          (async () => {
+            try {
+              await AIService.uploadFileToAI({
                 file_url: response.data.file_url,
                 file_type: 'file'
-            }).then(() => console.log("success"))
-            .catch(error => console.error("Upload failed:", error));
-        }, 0);
-          console.log("success")
+              });
+              console.log("Upload to AI success");
+            } catch (error) {
+              console.error("Upload to AI failed:", error);
+            }
+          })();
         }
       }
       
@@ -655,10 +660,11 @@ function CourseManagement() {
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mô tả khóa học
+              Mô tả khóa học <span className="text-red-500">*</span>
             </label>
             <Controller
               name="description"
+              rules={{ required: 'Vui lòng nhập mô tả khóa học' }}
               control={control}
               render={({ field }) => (
                 <TextArea
@@ -668,6 +674,9 @@ function CourseManagement() {
                 />
               )}
             />
+            {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+              )}
           </div>
           
           <div>
