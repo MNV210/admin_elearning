@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // Tạo instance của axios với cấu hình mặc định
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL =  'https://elearningbackend-snowy.vercel.app/api/api/v1'
+
+// 'http://localhost:8000/api/v1';
 // https://elearningbackend-snowy.vercel.app/api/api/v1 // Thay đổi URL này thành API endpoint thật của bạn
 
 const apiClient = axios.create({
