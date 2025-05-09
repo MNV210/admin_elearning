@@ -47,17 +47,37 @@ const LessonManagement = () => {
         }, 1000);
     }
 
-    const createLesson = async(data) => {
+    const createLesson = async (data) => {
         try {
-            await lessonService.createLesson(data);
+            const response = await lessonService.createLesson(data);
             await getLessonByCourseId();
             message.success('Tạo mới bài học thành công!');
+            console.log("response_create_ls", response)
+            if (response?.data?.file_url && response.data.type === "file") {
+                console.log("upload file to knowledge base");
+                console.log(response.data);
+            
+                (async () => {
+                    try {
+                        await AIService.uploadFileToAI({
+                            file_url: response.data.file_url,
+                            file_type: 'file'
+                        });
+                        console.log("Upload success");
+                    } catch (error) {
+                        console.error("Upload failed:", error);
+                    }
+                })();
+            }
+            
+    
             return true;
         } catch (error) {
             message.error('Tạo mới bài học thất bại: ' + (error.message || 'Đã xảy ra lỗi'));
             return false;
         }
-    }
+    };
+    
 
     // lấy danh sách khóa học theo course_id
     useEffect(() => {
@@ -140,10 +160,10 @@ const LessonManagement = () => {
                     
                     if (file) {
                         const file_url = await uploadToS3.uploadVideo({file: file});
-                         await AIService.uploadFileToAI({
-                                        file_url: file_url.data.url,
-                                        file_type: 'file'
-                                    })
+                        //  await AIService.uploadFileToAI({
+                        //                 file_url: file_url.data.url,
+                        //                 file_type: 'file'
+                        //             })
                         updateData.file_url = file_url.data.url;
                     }
                     
@@ -151,6 +171,22 @@ const LessonManagement = () => {
                     if (response && response.status === 'success') {
                         await getLessonByCourseId();
                         message.success('Cập nhật bài học thành công!');
+                        if (response?.data?.file_url && response.data.type === "file") {
+                            console.log("upload file to knowledge base");
+                            console.log(response.data);
+                        
+                            (async () => {
+                                try {
+                                    await AIService.uploadFileToAI({
+                                        file_url: response.data.file_url,
+                                        file_type: 'file'
+                                    });
+                                    console.log("Upload success");
+                                } catch (error) {
+                                    console.error("Upload failed:", error);
+                                }
+                            })();
+                        }
                         setIsModalVisible(false);
                         form.resetFields();
                     } else {

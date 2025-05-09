@@ -5,7 +5,7 @@ const uploadToS3 = {
     const formData = new FormData();
     formData.append('file', file);
 
-    return axios.post('http://localhost:8001/upload/', formData, {
+    return axios.post('http://localhost:9000/upload/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
