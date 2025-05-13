@@ -32,7 +32,19 @@ const questionService = {
         } catch (error) {
             throw error;
         }
-    }   
+    }   ,
+    importExcelController: async (formData) => {
+        try {
+            const response = await apiClient.post(`/import_excel`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default questionService;

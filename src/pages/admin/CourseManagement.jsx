@@ -549,13 +549,13 @@ function CourseManagement() {
                           <TrashIcon className="w-4 h-4 mr-1" />
                           Xóa
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleUploadDocument(course)}
                           className="text-green-600 hover:text-green-900 flex items-center"
                         >
                           <PlusIcon className="w-4 h-4 mr-1" />
                           Tải tài liệu
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => goToDetailsCourse(course)}
                           className="text-gray-600 hover:text-gray-900 flex items-center"

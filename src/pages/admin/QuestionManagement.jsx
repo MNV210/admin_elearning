@@ -6,10 +6,11 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { Modal } from 'antd';
+import { Modal, Upload } from 'antd';
 import { toast } from 'react-toastify';
 import questionService from '../../services/questionService';
 import { useParams } from 'react-router-dom';
+import { UploadOutlined } from '@ant-design/icons';
 
 const QuestionManagement = () => {
   const [questions, setQuestions] = useState([]);
@@ -20,6 +21,9 @@ const QuestionManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingQuestion, setDeletingQuestion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const params = useParams();
   
   const [formData, setFormData] = useState({
@@ -178,6 +182,35 @@ const QuestionManagement = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleUploadExcel = async () => {
+    if (!selectedFile) {
+      toast.error('Vui lòng chọn file Excel');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('files', selectedFile);
+    formData.append('quiz_id',params.quizId)
+    setUploading(true);
+    try {
+      // console.log(formData)
+      // Gọi API importExcelController (giả sử đã có trong questionService)
+      await questionService.importExcelController(formData);
+      toast.success('Import file Excel thành công!');
+      setSelectedFile(null);
+      await fetchQuestions();
+    } catch (error) {
+      console.error('Error importing Excel:', error);
+      const errorMessage = error.response?.data?.message || 'Không thể import file Excel';
+      toast.error(errorMessage);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -261,13 +294,22 @@ const QuestionManagement = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-800">Quản Lý Câu Hỏi</h1>
-        <button
-          onClick={handleAddQuestion}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto justify-center"
-        >
-          <PlusIcon className="w-5 h-5 mr-2" />
-          Thêm Câu Hỏi Mới
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            <UploadOutlined className="mr-2" />
+            Import Excel
+          </button>
+          <button
+            onClick={handleAddQuestion}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition w-full sm:w-auto justify-center"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Thêm Câu Hỏi Mới
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -478,6 +520,56 @@ const QuestionManagement = () => {
         onCancel={() => setIsDeleteModalOpen(false)}
       >
         <p>Bạn có chắc chắn muốn xóa câu hỏi này?</p>
+      </Modal>
+
+      {/* Modal Upload Excel */}
+      <Modal
+        title="Import Câu Hỏi từ Excel"
+        open={isUploadModalOpen}
+        onCancel={() => { setIsUploadModalOpen(false); setSelectedFile(null); }}
+        footer={null}
+        width={400}
+      >
+        <div className="space-y-4">
+          <Upload
+            beforeUpload={file => {
+              setSelectedFile(file);
+              return false; // Ngăn antd tự upload
+            }}
+            fileList={selectedFile ? [selectedFile] : []}
+            onRemove={() => setSelectedFile(null)}
+            accept=".xlsx,.xls"
+            maxCount={1}
+            showUploadList={{ showRemoveIcon: true }}
+            disabled={uploading}
+          >
+            <button
+              type="button"
+              className="block border border-gray-300 rounded-lg px-2 py-1 text-sm w-full bg-white hover:bg-gray-50"
+              disabled={uploading}
+            >Chọn file Excel</button>
+          </Upload>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => { setIsUploadModalOpen(false); setSelectedFile(null); }}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+              disabled={uploading}
+            >
+              Hủy
+            </button>
+            <button
+              onClick={async () => {
+                await handleUploadExcel();
+                setIsUploadModalOpen(false);
+                setSelectedFile(null);
+              }}
+              disabled={uploading || !selectedFile}
+              className="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+            >
+              {uploading ? 'Đang tải lên...' : 'Xác nhận Import'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
